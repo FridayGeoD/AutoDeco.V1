@@ -10,32 +10,38 @@ public:
     static DecoPopup* create(EditorUI* ui);
 
 protected:
-    struct Row {
-        CCMenuItemToggler* toggle = nullptr;
-        geode::TextInput* density = nullptr;
-    };
-
     EditorUI* m_ui = nullptr;
-    Row m_rows[5];
+    cocos2d::CCLabelBMFont* m_status = nullptr;
+
+    CCMenuItemToggler* m_surfaces = nullptr;
+    CCMenuItemToggler* m_fill = nullptr;
+    CCMenuItemToggler* m_air = nullptr;
+    CCMenuItemToggler* m_mirror = nullptr;
+    CCMenuItemToggler* m_skipDecorated = nullptr;
+    CCMenuItemToggler* m_selectionOnly = nullptr;
+
+    geode::TextInput* m_density = nullptr;
+    geode::TextInput* m_airDensity = nullptr;
     geode::TextInput* m_seed = nullptr;
     geode::TextInput* m_airHeight = nullptr;
-    geode::TextInput* m_glowColor = nullptr;
-    geode::TextInput* m_decoColor = nullptr;
-    CCMenuItemToggler* m_selectionOnly = nullptr;
 
     bool init(EditorUI* ui);
     void keyBackClicked() override;
 
     void onClose(cocos2d::CCObject*);
+    void onLearn(cocos2d::CCObject*);
+    void onForget(cocos2d::CCObject*);
     void onGenerate(cocos2d::CCObject*);
     void onClear(cocos2d::CCObject*);
-    void onGrab(cocos2d::CCObject* sender);
     void onRandomSeed(cocos2d::CCObject*);
     void onToggle(cocos2d::CCObject*) {}
 
+    void updateStatus();
+
     geode::TextInput* addInput(cocos2d::CCPoint pos, float width, std::string const& value);
-    CCMenuItemToggler* addToggle(cocos2d::CCPoint pos, bool on);
-    void addLabel(cocos2d::CCPoint pos, std::string const& text, float scale, cocos2d::CCPoint anchor = {0.f, 0.5f});
+    CCMenuItemToggler* addToggle(cocos2d::CCPoint pos, bool on, std::string const& text);
+    cocos2d::CCLabelBMFont* addLabel(cocos2d::CCPoint pos, std::string const& text, float scale, cocos2d::CCPoint anchor = {0.f, 0.5f});
+    CCMenuItemSpriteExtra* addButton(cocos2d::CCPoint pos, const char* text, const char* bg, float scale, cocos2d::SEL_MenuHandler cb);
 
     autodeco::GenOptions readOptions();
     void saveOptions(autodeco::GenOptions const& opts);

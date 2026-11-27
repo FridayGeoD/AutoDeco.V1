@@ -9,20 +9,7 @@ using namespace autodeco;
 namespace {
 
 constexpr float WIDTH = 420.f;
-constexpr float HEIGHT = 320.f;
-
-struct RowInfo {
-    const char* name;
-    const char* setting;
-};
-
-const RowInfo ROWS[5] = {
-    { "Edge glow",       "glow-ids" },
-    { "Ground deco",     "top-ids"  },
-    { "Hanging deco",    "hang-ids" },
-    { "Background deco", "bg-ids"   },
-    { "Air particles",   "air-ids"  },
-};
+constexpr float HEIGHT = 300.f;
 
 int parseInt(std::string const& s, int fallback, int lo, int hi) {
     if (s.empty()) return fallback;
@@ -79,71 +66,56 @@ bool DecoPopup::init(EditorUI* ui) {
     closeBtn->setPosition({-WIDTH / 2 + 5.f, HEIGHT / 2 - 5.f});
     m_buttonMenu->addChild(closeBtn);
 
-    // Column headers
-    float y = HEIGHT / 2 - 48.f;
-    addLabel({-190.f, y}, "Layer", 0.35f);
-    addLabel({40.f, y}, "Density %", 0.35f, {0.5f, 0.5f});
-    addLabel({145.f, y}, "Palette", 0.35f, {0.5f, 0.5f});
+    // Style section
+    m_status = addLabel({0.f, 100.f}, "", 0.45f, {0.5f, 0.5f});
+    updateStatus();
 
-    const bool enabled[5] = { opts.glow, opts.top, opts.hang, opts.background, opts.air };
-    const int density[5] = { opts.glowDensity, opts.topDensity, opts.hangDensity, opts.bgDensity, opts.airDensity };
+    addButton({-60.f, 72.f}, "Learn from selection", "GJ_button_01.png", 0.6f, menu_selector(DecoPopup::onLearn));
+    addButton({110.f, 72.f}, "Forget", "GJ_button_06.png", 0.6f, menu_selector(DecoPopup::onForget));
 
-    for (int i = 0; i < 5; ++i) {
-        y -= 25.f;
-        m_rows[i].toggle = addToggle({-185.f, y}, enabled[i]);
-        addLabel({-165.f, y}, ROWS[i].name, 0.4f);
-        m_rows[i].density = addInput({40.f, y}, 60.f, std::to_string(density[i]));
+    auto hint = addLabel({0.f, 48.f}, "Deco a few blocks, select them + their deco, press Learn", 0.3f, {0.5f, 0.5f});
+    hint->setColor({200, 200, 255});
 
-        auto grabSpr = ButtonSprite::create("Grab", "goldFont.fnt", "GJ_button_04.png", 0.8f);
-        grabSpr->setScale(0.55f);
-        auto grab = CCMenuItemSpriteExtra::create(grabSpr, this, menu_selector(DecoPopup::onGrab));
-        grab->setTag(i);
-        grab->setPosition({145.f, y});
-        m_buttonMenu->addChild(grab);
-    }
+    // Toggles
+    m_surfaces      = addToggle({-190.f, 18.f}, opts.surfaces, "Block sides");
+    m_fill          = addToggle({-190.f, -7.f}, opts.fill, "Block fill");
+    m_air           = addToggle({-190.f, -32.f}, opts.air, "Air particles");
+    m_mirror        = addToggle({15.f, 18.f}, opts.mirror, "Mirror variety");
+    m_skipDecorated = addToggle({15.f, -7.f}, opts.skipDecorated, "Skip hand-deco");
+    m_selectionOnly = addToggle({15.f, -32.f}, opts.selectionOnly, "Only selected");
 
-    // Seed / air height
-    y -= 35.f;
-    addLabel({-195.f, y}, "Seed", 0.4f);
-    m_seed = addInput({-110.f, y}, 90.f, std::to_string(opts.seed));
-    m_seed->setFilter("0123456789");
+    // Numbers
+    addLabel({-200.f, -62.f}, "Density %", 0.4f);
+    m_density = addInput({-80.f, -62.f}, 60.f, std::to_string(opts.density));
+    addLabel({15.f, -62.f}, "Air %", 0.4f);
+    m_airDensity = addInput({140.f, -62.f}, 60.f, std::to_string(opts.airDensity));
 
-    auto diceSpr = ButtonSprite::create("Rnd", "goldFont.fnt", "GJ_button_02.png", 0.8f);
-    diceSpr->setScale(0.55f);
-    auto dice = CCMenuItemSpriteExtra::create(diceSpr, this, menu_selector(DecoPopup::onRandomSeed));
-    dice->setPosition({-40.f, y});
-    m_buttonMenu->addChild(dice);
+    addLabel({-200.f, -90.f}, "Seed", 0.4f);
+    m_seed = addInput({-110.f, -90.f}, 90.f, std::to_string(opts.seed));
+    addButton({-38.f, -90.f}, "Rnd", "GJ_button_02.png", 0.55f, menu_selector(DecoPopup::onRandomSeed));
+    addLabel({15.f, -90.f}, "Air height", 0.4f);
+    m_airHeight = addInput({140.f, -90.f}, 60.f, std::to_string(opts.airHeight));
 
-    addLabel({15.f, y}, "Air height", 0.4f);
-    m_airHeight = addInput({140.f, y}, 50.f, std::to_string(opts.airHeight));
-
-    // Colors
-    y -= 28.f;
-    addLabel({-195.f, y}, "Glow col", 0.4f);
-    m_glowColor = addInput({-110.f, y}, 60.f, std::to_string(opts.glowColor));
-    addLabel({15.f, y}, "Deco col", 0.4f);
-    m_decoColor = addInput({140.f, y}, 50.f, std::to_string(opts.decoColor));
-
-    // Selection only
-    y -= 26.f;
-    m_selectionOnly = addToggle({-185.f, y}, opts.selectionOnly);
-    addLabel({-165.f, y}, "Only decorate selected blocks", 0.4f);
-
-    // Action buttons
-    auto genSpr = ButtonSprite::create("Generate", "goldFont.fnt", "GJ_button_01.png", 0.8f);
-    auto gen = CCMenuItemSpriteExtra::create(genSpr, this, menu_selector(DecoPopup::onGenerate));
-    gen->setPosition({-60.f, -HEIGHT / 2 + 25.f});
-    m_buttonMenu->addChild(gen);
-
-    auto clrSpr = ButtonSprite::create("Clear", "goldFont.fnt", "GJ_button_06.png", 0.8f);
-    auto clr = CCMenuItemSpriteExtra::create(clrSpr, this, menu_selector(DecoPopup::onClear));
-    clr->setPosition({75.f, -HEIGHT / 2 + 25.f});
-    m_buttonMenu->addChild(clr);
+    // Actions
+    addButton({-60.f, -HEIGHT / 2 + 22.f}, "Generate", "GJ_button_01.png", 0.8f, menu_selector(DecoPopup::onGenerate));
+    addButton({75.f, -HEIGHT / 2 + 22.f}, "Clear", "GJ_button_06.png", 0.8f, menu_selector(DecoPopup::onClear));
 
     this->setTouchEnabled(true);
     this->setKeypadEnabled(true);
     handleTouchPriority(this);
     return true;
+}
+
+void DecoPopup::updateStatus() {
+    auto const& st = currentStyle();
+    if (st.empty()) {
+        m_status->setString("No style learned yet");
+        m_status->setColor({255, 160, 160});
+    }
+    else {
+        m_status->setString(fmt::format("Style: {} patterns, {} objects", st.patternCount(), st.itemCount()).c_str());
+        m_status->setColor({160, 255, 160});
+    }
 }
 
 TextInput* DecoPopup::addInput(CCPoint pos, float width, std::string const& value) {
@@ -156,81 +128,75 @@ TextInput* DecoPopup::addInput(CCPoint pos, float width, std::string const& valu
     return input;
 }
 
-CCMenuItemToggler* DecoPopup::addToggle(CCPoint pos, bool on) {
+CCMenuItemToggler* DecoPopup::addToggle(CCPoint pos, bool on, std::string const& text) {
     auto toggle = CCMenuItemToggler::createWithStandardSprites(this, menu_selector(DecoPopup::onToggle), 0.6f);
     toggle->toggle(on);
     toggle->setPosition(pos);
     m_buttonMenu->addChild(toggle);
+    addLabel({pos.x + 18.f, pos.y}, text, 0.4f);
     return toggle;
 }
 
-void DecoPopup::addLabel(CCPoint pos, std::string const& text, float scale, CCPoint anchor) {
+CCLabelBMFont* DecoPopup::addLabel(CCPoint pos, std::string const& text, float scale, CCPoint anchor) {
     auto label = CCLabelBMFont::create(text.c_str(), "bigFont.fnt");
     label->setScale(scale);
     label->setAnchorPoint(anchor);
     label->setPosition(CCDirector::get()->getWinSize() / 2 + pos);
     m_mainLayer->addChild(label, 11);
+    return label;
+}
+
+CCMenuItemSpriteExtra* DecoPopup::addButton(CCPoint pos, const char* text, const char* bg, float scale, SEL_MenuHandler cb) {
+    auto spr = ButtonSprite::create(text, "goldFont.fnt", bg, 0.8f);
+    spr->setScale(scale);
+    auto btn = CCMenuItemSpriteExtra::create(spr, this, cb);
+    btn->setPosition(pos);
+    m_buttonMenu->addChild(btn);
+    return btn;
 }
 
 GenOptions DecoPopup::readOptions() {
     GenOptions o;
-    o.glow       = m_rows[0].toggle->isToggled();
-    o.top        = m_rows[1].toggle->isToggled();
-    o.hang       = m_rows[2].toggle->isToggled();
-    o.background = m_rows[3].toggle->isToggled();
-    o.air        = m_rows[4].toggle->isToggled();
-
-    o.glowDensity = parseInt(m_rows[0].density->getString(), 100, 0, 100);
-    o.topDensity  = parseInt(m_rows[1].density->getString(), 45, 0, 100);
-    o.hangDensity = parseInt(m_rows[2].density->getString(), 35, 0, 100);
-    o.bgDensity   = parseInt(m_rows[3].density->getString(), 20, 0, 100);
-    o.airDensity  = parseInt(m_rows[4].density->getString(), 4, 0, 100);
-
-    o.airHeight = parseInt(m_airHeight->getString(), 8, 0, 100);
-    o.glowColor = parseInt(m_glowColor->getString(), 0, 0, 1101);
-    o.decoColor = parseInt(m_decoColor->getString(), 0, 0, 1101);
-    o.seed = static_cast<unsigned>(parseInt(m_seed->getString(), 1337, 0, 999999999));
+    o.surfaces = m_surfaces->isToggled();
+    o.fill = m_fill->isToggled();
+    o.air = m_air->isToggled();
+    o.mirror = m_mirror->isToggled();
+    o.skipDecorated = m_skipDecorated->isToggled();
     o.selectionOnly = m_selectionOnly->isToggled();
+    o.density = parseInt(m_density->getString(), 100, 0, 100);
+    o.airDensity = parseInt(m_airDensity->getString(), 100, 0, 1000);
+    o.airHeight = parseInt(m_airHeight->getString(), 8, 0, 100);
+    o.seed = static_cast<unsigned>(parseInt(m_seed->getString(), 1337, 0, 999999999));
     return o;
 }
 
 void DecoPopup::saveOptions(GenOptions const& o) {
     auto m = Mod::get();
-    m->setSavedValue<bool>("o-glow", o.glow);
-    m->setSavedValue<bool>("o-top", o.top);
-    m->setSavedValue<bool>("o-hang", o.hang);
-    m->setSavedValue<bool>("o-bg", o.background);
-    m->setSavedValue<bool>("o-air", o.air);
-    m->setSavedValue<bool>("o-sel", o.selectionOnly);
-    m->setSavedValue<int>("o-glow-d", o.glowDensity);
-    m->setSavedValue<int>("o-top-d", o.topDensity);
-    m->setSavedValue<int>("o-hang-d", o.hangDensity);
-    m->setSavedValue<int>("o-bg-d", o.bgDensity);
-    m->setSavedValue<int>("o-air-d", o.airDensity);
-    m->setSavedValue<int>("o-air-h", o.airHeight);
-    m->setSavedValue<int>("o-glow-c", o.glowColor);
-    m->setSavedValue<int>("o-deco-c", o.decoColor);
-    m->setSavedValue<int>("o-seed", static_cast<int>(o.seed));
+    m->setSavedValue<bool>("o2-surfaces", o.surfaces);
+    m->setSavedValue<bool>("o2-fill", o.fill);
+    m->setSavedValue<bool>("o2-air", o.air);
+    m->setSavedValue<bool>("o2-mirror", o.mirror);
+    m->setSavedValue<bool>("o2-skip", o.skipDecorated);
+    m->setSavedValue<bool>("o2-sel", o.selectionOnly);
+    m->setSavedValue<int>("o2-density", o.density);
+    m->setSavedValue<int>("o2-air-density", o.airDensity);
+    m->setSavedValue<int>("o2-air-height", o.airHeight);
+    m->setSavedValue<int>("o2-seed", static_cast<int>(o.seed));
 }
 
 GenOptions DecoPopup::loadOptions() {
     GenOptions d;
     auto m = Mod::get();
-    d.glow          = m->getSavedValue<bool>("o-glow", d.glow);
-    d.top           = m->getSavedValue<bool>("o-top", d.top);
-    d.hang          = m->getSavedValue<bool>("o-hang", d.hang);
-    d.background    = m->getSavedValue<bool>("o-bg", d.background);
-    d.air           = m->getSavedValue<bool>("o-air", d.air);
-    d.selectionOnly = m->getSavedValue<bool>("o-sel", d.selectionOnly);
-    d.glowDensity   = m->getSavedValue<int>("o-glow-d", d.glowDensity);
-    d.topDensity    = m->getSavedValue<int>("o-top-d", d.topDensity);
-    d.hangDensity   = m->getSavedValue<int>("o-hang-d", d.hangDensity);
-    d.bgDensity     = m->getSavedValue<int>("o-bg-d", d.bgDensity);
-    d.airDensity    = m->getSavedValue<int>("o-air-d", d.airDensity);
-    d.airHeight     = m->getSavedValue<int>("o-air-h", d.airHeight);
-    d.glowColor     = m->getSavedValue<int>("o-glow-c", d.glowColor);
-    d.decoColor     = m->getSavedValue<int>("o-deco-c", d.decoColor);
-    d.seed          = static_cast<unsigned>(m->getSavedValue<int>("o-seed", static_cast<int>(d.seed)));
+    d.surfaces      = m->getSavedValue<bool>("o2-surfaces", d.surfaces);
+    d.fill          = m->getSavedValue<bool>("o2-fill", d.fill);
+    d.air           = m->getSavedValue<bool>("o2-air", d.air);
+    d.mirror        = m->getSavedValue<bool>("o2-mirror", d.mirror);
+    d.skipDecorated = m->getSavedValue<bool>("o2-skip", d.skipDecorated);
+    d.selectionOnly = m->getSavedValue<bool>("o2-sel", d.selectionOnly);
+    d.density       = m->getSavedValue<int>("o2-density", d.density);
+    d.airDensity    = m->getSavedValue<int>("o2-air-density", d.airDensity);
+    d.airHeight     = m->getSavedValue<int>("o2-air-height", d.airHeight);
+    d.seed          = static_cast<unsigned>(m->getSavedValue<int>("o2-seed", static_cast<int>(d.seed)));
     return d;
 }
 
@@ -244,15 +210,38 @@ void DecoPopup::keyBackClicked() {
     this->onClose(nullptr);
 }
 
+void DecoPopup::onLearn(CCObject*) {
+    auto res = learnFromSelection(m_ui);
+    if (res.solids == 0 || res.decos == 0) {
+        Notification::create("Select some blocks AND the decoration you put on them", NotificationIcon::Warning)->show();
+        return;
+    }
+    updateStatus();
+    Notification::create(
+        fmt::format("Learned {} patterns from {} blocks and {} deco objects", res.patterns, res.solids, res.decos),
+        NotificationIcon::Success
+    )->show();
+}
+
+void DecoPopup::onForget(CCObject*) {
+    forgetStyle();
+    updateStatus();
+    Notification::create("Style forgotten", NotificationIcon::Info)->show();
+}
+
 void DecoPopup::onGenerate(CCObject*) {
+    if (currentStyle().empty()) {
+        Notification::create("Learn a style first: decorate a few blocks, select them, press Learn", NotificationIcon::Warning)->show();
+        return;
+    }
+
     auto opts = readOptions();
     saveOptions(opts);
 
     auto res = generate(m_ui, opts);
-
     if (res.placed == 0) {
         Notification::create(
-            opts.selectionOnly ? "No solid blocks selected" : "Nothing to decorate (no solid blocks or empty palettes)",
+            opts.selectionOnly ? "No solid blocks selected" : "Nothing new to decorate",
             NotificationIcon::Warning
         )->show();
         return;
@@ -260,7 +249,6 @@ void DecoPopup::onGenerate(CCObject*) {
 
     std::string msg = fmt::format("Placed {} deco objects", res.placed);
     if (res.hitCap) msg += " (hit max-object cap)";
-    if (res.skippedIds) msg += fmt::format(", skipped {} non-deco ID(s)", res.skippedIds);
     Notification::create(msg, NotificationIcon::Success)->show();
     this->onClose(nullptr);
 }
@@ -269,7 +257,7 @@ void DecoPopup::onClear(CCObject*) {
     auto ui = m_ui;
     geode::createQuickPopup(
         "Clear generated",
-        "Remove <cy>every object</c> in the Auto Deco group?\nThis can't be undone with Ctrl+Z.",
+        "Remove <cy>every object</c> Auto Deco placed?\nYour hand-made deco is kept. This can't be undone with Ctrl+Z.",
         "Cancel", "Clear",
         [ui](FLAlertLayer*, bool confirm) {
             if (!confirm) return;
@@ -277,17 +265,6 @@ void DecoPopup::onClear(CCObject*) {
             Notification::create(fmt::format("Removed {} generated objects", n), NotificationIcon::Info)->show();
         }
     );
-}
-
-void DecoPopup::onGrab(CCObject* sender) {
-    int row = sender->getTag();
-    if (row < 0 || row > 4) return;
-    int n = grabSelectionInto(m_ui, ROWS[row].setting);
-    if (n == 0) {
-        Notification::create("Select some decoration objects first", NotificationIcon::Warning)->show();
-        return;
-    }
-    Notification::create(fmt::format("{} palette set from {} object ID(s)", ROWS[row].name, n), NotificationIcon::Success)->show();
 }
 
 void DecoPopup::onRandomSeed(CCObject*) {
