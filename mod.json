@@ -6,10 +6,10 @@
 		"mac": "2.2081",
 		"ios": "2.2081"
 	},
-	"id": "yourname.auto-deco",
+	"fridaygeod_autodeco-v1": "fridaygeod.auto-deco",
 	"name": "Auto Deco",
 	"version": "v1.0.0",
-	"developer": "YourName",
+	"developer": "FridayGeoD",
 	"description": "Generate full level decoration (glow, ground deco, hanging deco, background and air particles) in one click.",
 	"tags": ["editor", "utility", "enhancement"],
 	"settings": {
