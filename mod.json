@@ -8,10 +8,14 @@
 	},
 	"id": "fridaygeod.auto-deco",
 	"name": "Auto Deco",
-	"version": "v1.0.0",
+	"version": "v2.0.0",
 	"developer": "FridayGeoD",
-	"description": "Generate full level decoration (glow, ground deco, hanging deco, background and air particles) in one click.",
-	"tags": ["editor", "utility", "enhancement"],
+	"description": "Decorate a few blocks by hand and Auto Deco learns your style and decorates the whole level with it.",
+	"tags": [
+		"editor",
+		"utility",
+		"enhancement"
+	],
 	"settings": {
 		"max-objects": {
 			"type": "int",
@@ -24,40 +28,10 @@
 		"gen-group": {
 			"type": "int",
 			"name": "Generated group ID",
-			"description": "Every generated object is put in this group so 'Clear generated' can find and remove it. Pick a group your level doesn't use.",
+			"description": "Every generated object is put in this group so 'Clear' can find and remove it. Pick a group your level doesn't use.",
 			"default": 9999,
 			"min": 1,
 			"max": 9999
-		},
-		"glow-ids": {
-			"type": "string",
-			"name": "Glow object IDs",
-			"description": "Comma-separated IDs placed along exposed block edges. Use the 'Grab' button in the generator to fill this from selected objects.",
-			"default": "503,504,505"
-		},
-		"top-ids": {
-			"type": "string",
-			"name": "Ground/top deco IDs",
-			"description": "Placed on top of block surfaces (grass, spikes deco, etc).",
-			"default": "18,19,20,21"
-		},
-		"hang-ids": {
-			"type": "string",
-			"name": "Hanging deco IDs",
-			"description": "Placed under ceilings (chains, vines, etc).",
-			"default": "15,16,17"
-		},
-		"bg-ids": {
-			"type": "string",
-			"name": "Background deco IDs",
-			"description": "Placed behind blocks on a background Z layer.",
-			"default": "48,49,50,51,52"
-		},
-		"air-ids": {
-			"type": "string",
-			"name": "Air particle IDs",
-			"description": "Scattered in empty space above the level.",
-			"default": "1764,1765,1766,1767,1768"
 		}
 	}
 }
