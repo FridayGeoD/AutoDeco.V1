@@ -12,6 +12,9 @@ public:
 protected:
     EditorUI* m_ui = nullptr;
     cocos2d::CCLabelBMFont* m_status = nullptr;
+    cocos2d::CCLabelBMFont* m_recipe = nullptr;
+    cocos2d::CCLayerColor* m_underline = nullptr;
+    std::vector<CCMenuItemSpriteExtra*> m_presetButtons;
 
     CCMenuItemToggler* m_surfaces = nullptr;
     CCMenuItemToggler* m_fill = nullptr;
@@ -19,6 +22,7 @@ protected:
     CCMenuItemToggler* m_mirror = nullptr;
     CCMenuItemToggler* m_skipDecorated = nullptr;
     CCMenuItemToggler* m_selectionOnly = nullptr;
+    CCMenuItemToggler* m_sameBlock = nullptr;
 
     geode::TextInput* m_density = nullptr;
     geode::TextInput* m_airDensity = nullptr;
@@ -35,6 +39,7 @@ protected:
     void onClear(cocos2d::CCObject*);
     void onRandomSeed(cocos2d::CCObject*);
     void onToggle(cocos2d::CCObject*) {}
+    void onPreset(cocos2d::CCObject* sender);
 
     void updateStatus();
 

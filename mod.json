@@ -8,7 +8,7 @@
 	},
 	"id": "fridaygeod.auto-deco",
 	"name": "Auto Deco",
-	"version": "v2.0.0",
+	"version": "v2.2.0",
 	"developer": "FridayGeoD",
 	"description": "Decorate a few blocks by hand and Auto Deco learns your style and decorates the whole level with it.",
 	"tags": [

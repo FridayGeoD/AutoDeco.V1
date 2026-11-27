@@ -31,6 +31,49 @@ The learned style is saved, so you can reuse it in other levels.
 - **Seed / Rnd**: the same seed gives the same result. Roll a new one for a different variation.
 - **Clear**: removes everything Auto Deco placed (it all goes into group 9999, which you can change in the mod settings). Your own decoration is kept.
 
+## Block matching (v2.2)
+- Decoration is stored **relative to the exact block it sits on**, including that block's position, rotation and flip. Off-grid blocks, half blocks and nudged blocks all line up correctly.
+- When generating, each pattern is **rotated and flipped to match the target block**. For example, if a block is rotated 90°, its "top" deco ends up on its right side, turned 90°.
+- Decoration is matched to the **block type** (object ID) it was learned on. **Same block only** (on by default) decorates only block types that were in your sample. Turn it off to let every block type use your patterns.
+- v2.2 saves styles in a new format, so learn each preset again once.
+
+## Style presets
+
+The window has five style slots: **Heliopolis**, **TS II** (Thinking Space II), **Grief**, **Acheron** and **Custom**. Tap one to switch to it. **Learn** saves your sample into the selected slot, and **Generate** uses the selected slot. Each slot is saved separately, so build each sample once and reuse it in every level.
+
+Make each sample look like its reference. These are the color channels and objects to use:
+
+### Heliopolis (green)
+- **Colors:** background `#0B1A0B`, main glow / outlines `#46FF46`, detail `#1E4A1E`, silhouettes `#3A4A3A`.
+- **Block sides:** 2–3 offset thin line outlines along each edge to get the stacked-brick look, plus a bright green glow piece on top.
+- **Block fill:** small brick or line detail pieces inside blocks.
+- **Below ceilings:** hanging lamps on a bent pole, and a chain now and then.
+- **Air:** small green and yellow square pixels and particle bits.
+- **Background (B layers):** darker staircase and pillar silhouettes, plus zigzag spike deco on the edges.
+
+### Thinking Space II (black and white)
+- **Colors:** background `#050505`, outlines `#FFFFFF`, detail `#7A7A7A`, accent `#3DFF6E` (use it rarely).
+- **Block sides:** thin white outline lines with a soft white glow.
+- **Block fill:** gray square or panel detail.
+- **Below ceilings:** hanging light bulbs and lamps.
+- **Air:** lots of crystal and glass shards at different rotations, plus a few small green bits. Set **Air %** higher, around 150.
+
+### Grief (red)
+- **Colors:** background `#3A0000`, glow `#FF2020`, shapes `#000000`, mid red `#8B0000`.
+- **Block sides:** black shapes with a strong red glow on the edges, and red zigzag spike deco.
+- **Block fill:** black, with an occasional red triangle detail.
+- **Below ceilings:** big black chains.
+- **Background (B layers):** large dark-red saw blades and spiky shapes.
+
+### Acheron (red and black)
+- **Colors:** background `#0B0B0D`, blocks `#1C1C1F`, outlines `#E01E1E`, highlights `#FFFFFF`.
+- **Block sides:** thin red outline lines, plus gray spike deco on tops.
+- **Block fill:** dark panels, with a red "eye" face detail on some blocks.
+- **Below ceilings:** hanging chains with lamps.
+- **Background:** dark saw blades.
+
+Set the color channels with the editor's normal color menu. The mod copies the channel numbers each object uses, so generated deco takes on the same colors.
+
 ## Build
 Push this folder to a GitHub repo. The included workflow builds the Windows `.geode` file. Download **Build Output** from the run's Summary page, then put the `.geode` file in `geode/mods`.
 
