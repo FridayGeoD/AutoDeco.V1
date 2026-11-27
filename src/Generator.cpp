@@ -252,7 +252,7 @@ Item makeItem(GameObject* obj, Anchor const& a) {
 
 Anchor cellAnchor(int gx, int gy) {
     Anchor a;
-    a.pos = { cellCenter(gx), cellCenter(gy) };
+    a.pos = CCPoint(cellCenter(gx), cellCenter(gy));
     return a;
 }
 
