@@ -20,11 +20,11 @@ class $modify(AutoDecoEditorUI, EditorUI) {
             menu->updateLayout();
         } else {
             auto winSize = CCDirector::get()->getWinSize();
-            auto menu = CCMenu::create();
-            menu->setID("auto-deco-menu"_spr);
-            menu->setPosition({winSize.width / 2 - 120.f, winSize.height - 25.f});
-            menu->addChild(btn);
-            this->addChild(menu, 10);
+            auto newMenu = CCMenu::create();
+            newMenu->setID("auto-deco-menu"_spr);
+            newMenu->setPosition({winSize.width / 2 - 120.f, winSize.height - 25.f});
+            newMenu->addChild(btn);
+            this->addChild(newMenu, 10);
         }
         return true;
     }
